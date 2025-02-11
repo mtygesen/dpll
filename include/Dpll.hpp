@@ -186,11 +186,11 @@ namespace dpll {
                 std::cout << "Starting solver..." << '\n';
                 Assignment assignment;
 
-                auto start = std::chrono::high_resolution_clock::now();
-                bool satisfiable = solve(formula, assignment, useSimplification);
-                auto end = std::chrono::high_resolution_clock::now();
+                const auto start = std::chrono::high_resolution_clock::now();
+                const bool satisfiable = solve(formula, assignment, useSimplification);
+                const auto end = std::chrono::high_resolution_clock::now();
 
-                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+                const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
                 std::cout << "Solver finished in " << duration.count() << "ms\n";
 
                 if (satisfiable) {
