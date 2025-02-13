@@ -12,7 +12,17 @@ namespace dpll {
     class Variable {
         public:
             explicit Variable(std::string variableName, bool isNegated = false) : variableName(std::move(variableName)), isNegated(isNegated) {}
-    
+
+            Variable(const Variable &other) : variableName(other.variableName), isNegated(other.isNegated) {}
+
+            Variable(Variable &&other) noexcept : variableName(std::move(const_cast<std::string&>(other.variableName))), isNegated(other.isNegated) {}
+            
+            Variable &operator=(Variable &&other) noexcept {
+                const_cast<std::string&>(variableName) = std::move(const_cast<std::string&>(other.variableName));
+                const_cast<bool&>(isNegated) = other.isNegated;
+                return *this;
+            }
+
             std::string_view getName() const {
                 return variableName;
             }
@@ -74,14 +84,11 @@ namespace dpll {
             }  
 
             void removeVariable(const Variable &varToRemove) {
-                std::vector<Variable> newVariables;
-                for (const auto &var : variables) {
-                    if (var != varToRemove) {
-                        newVariables.emplace_back(var);
-                    }
-                }
-
-                variables = std::move(newVariables);
+                variables.erase(
+                    std::remove_if(variables.begin(), variables.end(),
+                        [&varToRemove](const Variable &var) { return var == varToRemove; }),
+                    variables.end()
+                );
             }
 
             std::vector<Variable> variables;
@@ -326,7 +333,7 @@ namespace dpll {
                         if (shouldRemove) {
                             formula.removeClause(i);
                         } else {
-                            Variable oppositeVar(std::string(unitVar.getName()), !unitVar.getIsNegated());
+                            Variable oppositeVar(varName, !unitVar.getIsNegated());
                             currentClause.removeVariable(oppositeVar);
                         }
                     }
