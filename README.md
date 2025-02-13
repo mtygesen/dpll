@@ -26,6 +26,7 @@ Which yields the following output:
 ```bash
 Starting solver...
 Formula: (p ∨ q) ∧ (¬p ∨ r) ∧ (¬q ∨ ¬r) ∧ (p ∨ ¬s) ∧ (q ∨ s) ∧ (r ∨ s)
+Solver finished in 0ms
 Formula is satisfiable!
 Assignment:
 s = true
