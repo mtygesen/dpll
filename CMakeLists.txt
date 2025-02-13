@@ -12,4 +12,4 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s")
 set(CMAKE_BUILD_TYPE Release)
 
 include_directories(include)
-add_executable(dpll Main.cpp)
+add_executable(dpll example.cpp)
