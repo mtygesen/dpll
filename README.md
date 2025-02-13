@@ -8,6 +8,8 @@ E.g. to solve (p ∨ q) ∧ (¬p ∨ r) ∧ (¬q ∨ ¬r) ∧ (p ∨ ¬s) ∧ (q
 ```cpp
 #include <dpll.hpp>
 
+using namespace dpll;
+
 int main(void) {
     dpll::Formula formula({
         {"p", "q"},     
@@ -18,7 +20,7 @@ int main(void) {
         {"r", "s"}         
     });
 
-    dpll::Solver::solve(formula);
+    Solver::solve(formula);
 }
 ```
 

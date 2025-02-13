@@ -1,5 +1,7 @@
 #include <dpll.hpp>
 
+using namespace dpll;
+
 int main(void) {
     dpll::Formula formula({
         {"p", "q"},     
@@ -10,5 +12,5 @@ int main(void) {
         {"r", "s"}         
     });
 
-    dpll::Solver::solve(formula);
+    Solver::solve(formula);
 }
