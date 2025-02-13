@@ -18,7 +18,7 @@ int main(void) {
         {"r", "s"}         
     });
 
-    dpll::Dpll::solve(formula);
+    dpll::Solver::solve(formula);
 }
 ```
 
@@ -33,3 +33,9 @@ r = true
 q = false
 p = true
 ```
+
+### Arguments
+```formula``` formula to find satisfying assignment for
+```useUnitProp``` whether to use unit propagation or not (default: true)
+```usePureAssign``` whether to use pure literal assignment or not (default: true)
+```silent``` whether to print to stdout (default: false)

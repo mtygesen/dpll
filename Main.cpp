@@ -10,5 +10,5 @@ int main(void) {
         {"r", "s"}         
     });
 
-    dpll::Dpll::solve(formula);
+    dpll::Solver::solve(formula);
 }

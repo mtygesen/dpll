@@ -58,7 +58,7 @@ namespace dpll {
             }
 
         private:
-            friend class Dpll;
+            friend class Solver;
             friend class Formula;
             
             bool isEmpty() const {
@@ -140,7 +140,7 @@ namespace dpll {
             }
     
         private:
-            friend class Dpll;
+            friend class Solver;
 
             const auto &getPureVariables() const {
                 return pureVariables;
@@ -205,9 +205,9 @@ namespace dpll {
             std::unordered_map<std::string_view, std::pair<bool, bool>> pureVariables;
     };
     
-    class Dpll {
+    class Solver {
         public:
-            explicit Dpll() = default;
+            explicit Solver() = default;
 
             using Assignment = std::unordered_map<std::string, bool>;
 
