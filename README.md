@@ -35,7 +35,9 @@ p = true
 ```
 
 ### Arguments
-```formula``` formula to find satisfying assignment for
-```useUnitProp``` whether to use unit propagation or not (default: true)
-```usePureAssign``` whether to use pure literal assignment or not (default: true)
-```silent``` whether to print to stdout (default: false)
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `formula` | Formula to find satisfying assignment for | Required |
+| `useUnitProp` | Whether to use unit propagation | `true` |
+| `usePureAssign` | Whether to use pure literal assignment | `true` |
+| `silent` | Whether to print to stdout | `false` |
