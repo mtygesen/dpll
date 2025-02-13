@@ -2,9 +2,9 @@
 DPLL implementation as a single-header include in C++20
 
 ## Example Usage
-Formula must be encoded in CNF
+All formulas must be encoded in conjunctive normal form (CNF)
 
-E.g. to solve the following SAT problem: (p ∨ q) ∧ (¬p ∨ r) ∧ (¬q ∨ ¬r)
+E.g. to solve (p ∨ q) ∧ (¬p ∨ r) ∧ (¬q ∨ ¬r) ∧ (p ∨ ¬s) ∧ (q ∨ s) ∧ (r ∨ s):
 ```cpp
 #include <dpll.hpp>
 
