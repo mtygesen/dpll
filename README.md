@@ -41,4 +41,4 @@ p = true
 | `formula` | Formula to find satisfying assignment for | Required |
 | `useUnitProp` | Whether to use unit propagation | `true` |
 | `usePureAssign` | Whether to use pure literal assignment | `true` |
-| `silent` | Whether to print to stdout | `false` |
+| `silent` | Whether to avoid printing to stdout | `false` |
