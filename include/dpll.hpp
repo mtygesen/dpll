@@ -114,12 +114,12 @@ namespace dpll {
                 return os;
             }
 
-            bool isEmpty() const {
+            bool isEmpty() const noexcept {
                 return clauses.empty();
             }
     
             bool hasEmptyClause() const {
-                return !isEmpty() && std::any_of(clauses.begin(), clauses.end(), 
+                return std::any_of(clauses.begin(), clauses.end(), 
                     [](const Clause &clause) { return clause.isEmpty(); });
             }
     
@@ -153,11 +153,11 @@ namespace dpll {
                 return pureVariables;
             }
 
-            bool hasUnitClause() const {
+            bool hasUnitClause() const noexcept {
                 return !unitClauseIndicies.empty();
             }
     
-            bool hasPureVariable() const {
+            bool hasPureVariable() const noexcept {
                 return !pureVariables.empty();
             }
     
