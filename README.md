@@ -29,10 +29,10 @@ Formula: (p ∨ q) ∧ (¬p ∨ r) ∧ (¬q ∨ ¬r) ∧ (p ∨ ¬s) ∧ (q ∨ 
 Solver finished in 0ms
 Formula is satisfiable!
 Assignment:
-s = true
-r = true
-q = false
-p = true
+s = ⊤
+r = ⊤
+q = ⊥
+p = ⊤
 ```
 
 ### Arguments
