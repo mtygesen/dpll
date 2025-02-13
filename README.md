@@ -1,5 +1,5 @@
 # Davis–Putnam–Logemann–Loveland (DPLL) algorithm
-DPLL single-header include in C++20
+DPLL implementation as a single-header include in C++20
 
 ## Example Usage
 Formula must be encoded in CNF
