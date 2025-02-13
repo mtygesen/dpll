@@ -6,7 +6,7 @@ Formula must be encoded in CNF
 
 E.g. to solve the following SAT problem: (p ∨ q) ∧ (¬p ∨ r) ∧ (¬q ∨ ¬r)
 ```cpp
-#include <Dpll.hpp>
+#include <dpll.hpp>
 
 int main(void) {
     dpll::Formula formula({
