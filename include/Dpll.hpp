@@ -28,6 +28,10 @@ namespace dpll {
             bool operator!=(const Variable &other) const {
                 return !(*this == other);
             }
+
+            friend std::ostream &operator<<(std::ostream &os, const Variable &var) {
+                return os << (var.isNegated ? "¬" : "") << var.variableName;
+            }
     
         private:
             friend class Clause;
@@ -39,6 +43,19 @@ namespace dpll {
     class Clause {  
         public:
             explicit Clause(std::vector<Variable> variables) : variables(std::move(variables)) {}
+
+            friend std::ostream &operator<<(std::ostream &os, const Clause &clause) {
+                os << "(";
+                const auto &vars = clause.getVariables();
+                for (size_t i = 0; i < vars.size(); ++i) {
+                    os << vars[i];
+                    if (i < vars.size() - 1) {
+                        os << " ∨ "; 
+                    }
+                }
+
+                return os << ")";
+            }
 
         private:
             friend class Dpll;
@@ -56,11 +73,11 @@ namespace dpll {
                 return variables;
             }  
 
-            void removeVariable(const Variable& variable) {
+            void removeVariable(const Variable &varToRemove) {
                 std::vector<Variable> newVariables;
                 for (const auto &var : variables) {
-                    if (var != variable) {
-                        newVariables.push_back(var);
+                    if (var != varToRemove) {
+                        newVariables.emplace_back(var);
                     }
                 }
 
@@ -76,6 +93,18 @@ namespace dpll {
 
             explicit Formula(std::initializer_list<std::initializer_list<const std::string>> clauses) {
                 addClauses(clauses);
+            }
+
+            friend std::ostream &operator<<(std::ostream &os, const Formula &formula) {
+                const auto &clauses = formula.clauses;
+                for (size_t i = 0; i < clauses.size(); ++i) {
+                    os << clauses[i];
+                    if (i < clauses.size() - 1) {
+                        os << " ∧ ";
+                    }
+                }
+
+                return os;
             }
 
             bool isEmpty() const {
@@ -182,31 +211,45 @@ namespace dpll {
 
             using Assignment = std::unordered_map<std::string, bool>;
 
-            void solve(Formula &formula, bool useSimplification = true) const {
-                std::cout << "Starting solver..." << '\n';
+            static std::pair<bool, Assignment> solve(Formula &formula, bool useUnitProp = true, bool usePureAssign = true,  bool silent = false) {
+                if (!silent) {
+                    std::cout << "Starting solver..." << '\n';
+                    std::cout << "Formula: " << formula << '\n';
+                }
+
                 Assignment assignment;
 
                 const auto start = std::chrono::high_resolution_clock::now();
-                const bool satisfiable = solve(formula, assignment, useSimplification);
+                const bool satisfiable = solve(formula, assignment, useUnitProp, usePureAssign);
                 const auto end = std::chrono::high_resolution_clock::now();
+        
+                const auto result = std::make_pair(satisfiable, assignment);
+        
+                if (silent) return result;
 
                 const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
                 std::cout << "Solver finished in " << duration.count() << "ms\n";
 
                 if (satisfiable) {
                     std::cout << "Formula is satisfiable!\n";
-                    std::cout << "Assignment:\n";
-                    for (const auto &[var, value] : assignment) {
-                        std::cout << var << " = " << (value ? "true" : "false") << '\n';
+                    if (!assignment.empty()) {
+                        std::cout << "Assignment:\n";
+                        for (const auto &[var, value] : assignment) {
+                            std::cout << var << " = " << (value ? "true" : "false") << '\n';
+                        }
+                    } else {
+                        std::cout << "No variables to assign\n";
                     }
                 } else {
                     std::cout << "Formula is unsatisfiable!\n";
                 }
+
+                return result;
             }
 
         private:
-            bool solve(Formula &formula, Assignment &assignment, bool useSimplification) const {
-                if (useSimplification) simplify(formula, assignment);
+            static bool solve(Formula &formula, Assignment &assignment, bool useUnitProp, bool usePureAssign) {
+                simplify(formula, assignment, useUnitProp, usePureAssign);
             
                 if (formula.isEmpty()) return true;
                 if (formula.hasEmptyClause()) return false;
@@ -217,110 +260,95 @@ namespace dpll {
             
                 Formula positiveSplit = formula;
                 assignment[varName] = true;
+
                 applyAssignment(positiveSplit, var, true);
-                if (solve(positiveSplit, assignment, useSimplification)) return true;
+                if (solve(positiveSplit, assignment, useUnitProp, usePureAssign)) return true;
                 
                 Formula negativeSplit = formula;
                 assignment[varName] = false;
                 applyAssignment(negativeSplit, var, false);
-                return solve(negativeSplit, assignment, useSimplification);
+                return solve(negativeSplit, assignment, useUnitProp, usePureAssign);
             }
 
-            void applyAssignment(Formula &formula, const Variable &var, bool value) const {
-                std::string varName(var.getName());
-                for (size_t i = 0; i < formula.getClauses().size(); ++i) {
-                    auto &clause = formula.getClauses()[i];
-                    bool shouldRemove = false;
-                    
-                    for (const auto &clauseVar : clause.getVariables()) {
-                        if (clauseVar.getName() == var.getName() && clauseVar.getIsNegated() != value) {
-                            shouldRemove = true;
-                            break;
-                        }
-                    }
+            static void applyAssignment(Formula &formula, const Variable &variable, bool value) {
+                std::string varName(variable.getName());
+                auto &clauses = formula.getClauses();
+                for (size_t i = clauses.size(); i-- > 0;) {
+                    auto &clause = clauses[i];    
+                    const auto &variables = clause.getVariables();
+
+                    const bool shouldRemove = std::any_of(variables.begin(), variables.end(), 
+                                                    [&variable, &value](const Variable &var) { return variable == var && var.getIsNegated() != value; });
                     
                     if (shouldRemove) {
-                        formula.removeClause(i--);
-                        continue;
+                        formula.removeClause(i);
+                    } else {
+                        clause.removeVariable(Variable(varName, value));
                     }
+                }
+            }
+    
+            static void simplify(Formula &formula, Assignment &assignment, bool useUnitProp, bool usePureAssign) {
+                if (useUnitProp) {
+                    formula.computeUnitClauses();
+                    while (formula.hasUnitClause()) {
+                        unitPropagate(formula, assignment);
+                    }
+                }
 
-                    clause.removeVariable(Variable(varName, value));
+                if (usePureAssign) {
+                    while (formula.hasPureVariable()) {
+                        pureLiteralAssign(formula, assignment);
+                    }
                 }
             }
     
-            void simplify(Formula &formula, Assignment &assignment) const {
-                formula.computeUnitClauses();
-                while (formula.hasUnitClause()) {
-                    unitPropagate(formula, assignment);
-                }
-    
-                formula.computePureVariables();
-                while (formula.hasPureVariable()) {
-                    pureLiteralAssign(formula, assignment);
-                }
-            }
-    
-            void unitPropagate(Formula &formula, Assignment &assignment) const {
-                const auto &unitIndices = formula.getUnitClauseIndicies();
-                
-                for (const size_t idx : unitIndices) {
-                    if (idx >= formula.getClauses().size()) continue;
+            static void unitPropagate(Formula &formula, Assignment &assignment) {
+                auto &clauses = formula.getClauses();
+                std::vector<size_t> unitIndices = formula.getUnitClauseIndicies();
+                for (const size_t originalIdx : unitIndices) {
+                    if (originalIdx >= clauses.size()) continue;
                     
-                    const auto &clause = formula.getClauses()[idx];
-                    if (clause.isEmpty()) continue;
+                    const auto &clause = clauses[originalIdx];
+                    if (!clause.isUnit()) continue;
                     
                     const auto &unitVar = clause.getVariables()[0];
-
                     std::string varName(unitVar.getName());
                     assignment[varName] = !unitVar.getIsNegated();
                     
-                    for (size_t i = 0; i < formula.getClauses().size(); ++i) {
-                        auto &currentClause = formula.getClauses()[i];
-                        bool shouldRemove = false;
+                    for (size_t i = clauses.size(); i-- > 0;) {
+                        auto &currentClause = clauses[i];
+                        const auto &variables = currentClause.getVariables();
                         
-                        for (const auto &var : currentClause.getVariables()) {
-                            if (std::string(var.getName()) == std::string(unitVar.getName()) && 
-                                var.getIsNegated() == unitVar.getIsNegated()) {
-                                shouldRemove = true;
-                                break;
-                            }
-                        }
+                        const bool shouldRemove = std::any_of(variables.begin(), variables.end(), 
+                                                        [&unitVar](const Variable &var) { return var == unitVar; });
                         
                         if (shouldRemove) {
                             formula.removeClause(i);
-                            continue;
+                        } else {
+                            Variable oppositeVar(std::string(unitVar.getName()), !unitVar.getIsNegated());
+                            currentClause.removeVariable(oppositeVar);
                         }
-                        
-                        std::string unitVarName(unitVar.getName());
-                        Variable oppositeVar(unitVarName, !unitVar.getIsNegated());
-                        currentClause.removeVariable(oppositeVar);
                     }
                 }
-
+                
                 formula.computeUnitClauses();
             }
     
-            void pureLiteralAssign(Formula &formula, Assignment &assignment) const {
+            static void pureLiteralAssign(Formula &formula, Assignment &assignment) {
                 const auto &pureVars = formula.getPureVariables();
-                
                 for (const auto &[varName, occurrence] : pureVars) {
-                    bool value = occurrence.first;
+                    const bool value = occurrence.first;
                     assignment[std::string(varName)] = value;
-        
-                    for (size_t i = 0; i < formula.getClauses().size(); ++i) {
-                        auto &clause = formula.getClauses()[i];
-                        bool shouldRemove = false;
             
-                        for (const auto &var : clause.getVariables()) {
-                            if (var.getName() == varName) {
-                                shouldRemove = true;
-                                break;
-                            }
-                        }
-            
-                        if (shouldRemove) {
-                            formula.removeClause(i--);
-                        }
+                    for (size_t i = formula.getClauses().size(); i-- > 0;) {
+                        auto &currentClause = formula.getClauses()[i];
+                        const auto &variables = currentClause.getVariables();
+
+                        const bool shouldRemove = std::any_of(variables.begin(), variables.end(), 
+                                                        [&varName](const Variable &var) { return var.getName() == varName; });
+                        
+                        if (shouldRemove) formula.removeClause(i);
                     }
                 }
             
