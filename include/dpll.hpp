@@ -242,7 +242,7 @@ namespace dpll {
                     if (!assignment.empty()) {
                         std::cout << "Assignment:\n";
                         for (const auto &[var, value] : assignment) {
-                            std::cout << var << " = " << (value ? "⊤" : "⊥") << '\n';
+                            std::cout << var << " ↦ " << (value ? "⊤" : "⊥") << '\n';
                         }
                     } else {
                         std::cout << "No variables to assign\n";
