@@ -28,13 +28,13 @@ Which yields the following output:
 ```
 Starting solver...
 Formula: (p ∨ q) ∧ (¬p ∨ r) ∧ (¬q ∨ ¬r) ∧ (p ∨ ¬s) ∧ (q ∨ s) ∧ (r ∨ s)
-Solver finished in 0ms
+Solver finished in 0.004ms
 Formula is satisfiable!
 Assignment:
-s = ⊤
-r = ⊤
-q = ⊥
-p = ⊤
+s ↦ ⊤
+r ↦ ⊤
+q ↦ ⊥
+p ↦ ⊤
 ```
 
 ### Arguments
