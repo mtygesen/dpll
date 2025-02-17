@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cassert>
 #include <chrono>
+#include <iomanip>
 
 namespace dpll {
     class Variable {
@@ -234,8 +235,8 @@ namespace dpll {
         
                 if (silent) return result;
 
-                const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-                std::cout << "Solver finished in " << duration.count() << "ms\n";
+                const auto duration = std::chrono::duration<double, std::milli>(end - start);
+                std::cout << "Solver finished in " << std::fixed << std::setprecision(3) << duration.count() << "ms\n";
 
                 if (satisfiable) {
                     std::cout << "Formula is satisfiable!\n";
